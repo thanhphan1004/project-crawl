@@ -1,2 +1,2 @@
-Vin,Man,VehType,Year,Make,Model,Bodyclass,Series,Cylinder,Trim,EngineModel,EngineDisplacement
-2HNYD28858H540765,"HONDA OF CANADA MFG., INC. ", MULTIPURPOSE PASSENGER VEHICLE (MPV),2008,ACURA,MDX, Sport Utility Vehicle (SUV)/Multi-Purpose Vehicle (MPV), , , , , 
+Vin,Man,VehType,Year,Make,Model,Bodyclass,Series,Cylinder,Trim,EngineModel,FuelType,EngineDisplacement
+,,,,,,,,,,,,
