@@ -1,6 +1,7 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy.selector import Selector
+from scrapy.exceptions import CloseSpider
 import csv
 import os
 class VinSpider(scrapy.Spider):
@@ -29,22 +30,30 @@ class VinSpider(scrapy.Spider):
             "upgrade-insecure-requests": "1",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
     }
+    ListVin=[]
     start_urls=['https://vpic.nhtsa.dot.gov/decoder']
 
     def parse(self,response):
-        root=os.getcwd()
+        #root=os.getcwd()
         Pathfile='input_VIN.txt'
-        Chuoi_Vin=[]
+        cm_request=[]        
         with open(Pathfile,'r') as f:
-            Chuoi_Vin.append(f.readline())
+            data=f.readlines()
+        for a in data:
+            self.ListVin.append(a)
         token = response.css('input[name="__RequestVerificationToken"]::attr(value)').extract_first()
-        for a in Chuoi_Vin:                   
-            data={
-                '__RequestVerificationToken':token,
-                'VIN':a,
-                'ModelYear':''        
-            }        
-            yield scrapy.FormRequest(url=self.url_vin,formdata=data,callback=self.parse_Vin)
+        if(len(self.ListVin)>0):
+            for Vin in self.ListVin:
+                data={
+                    '__RequestVerificationToken':token,
+                    'VIN':Vin,
+                    'ModelYear':''        
+                }
+                cm_request.append(data)
+        else:
+            raise CloseSpider('Không có số VIN')
+        for cm in cm_request:
+            yield scrapy.FormRequest(url=self.url_vin,formdata=cm,callback=self.parse_Vin)                   
     def parse_Vin(self,response):
         hsx=Selector(response)  
         vehicle={}      
@@ -61,14 +70,13 @@ class VinSpider(scrapy.Spider):
         vehicle['EngineModel']=hsx.xpath("//label[contains(text(),'Engine Model:')]/following-sibling::text()").get()
         vehicle['FuelType']=hsx.xpath("//label[contains(text(),' Primary Fuel Type:')]/following-sibling::text()").get()
         vehicle['EngineDisplacement']=hsx.xpath("//label[contains(text(),' Engine Displacement (L):')]/following-sibling::text()").get()
-        print(vehicle['Trim'])
-        self.list_result.append(vehicle)        
+        print(vehicle['VehType'])
+        self.list_result.append(vehicle)             
         filename = 'result.csv'        
         with open(filename, 'w',newline="") as f:
             writer=csv.DictWriter(f,['Vin','Man','VehType','Year','Make','Model','Bodyclass','Series','Cylinder','Trim','EngineModel','FuelType','EngineDisplacement'])
             writer.writeheader()            
             writer.writerow(vehicle)
-        yield parse()          
 def run_Vin(VinSpider):      
     process=CrawlerProcess()
     process.crawl(VinSpider)
