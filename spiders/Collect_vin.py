@@ -94,4 +94,4 @@ class VinSpider(scrapy.Spider):
         process=CrawlerProcess()
         process.crawl(VinSpider)
         process.start()
-VinSpider.run_Vin(VinSpider)
+#VinSpider.run_Vin(VinSpider)
