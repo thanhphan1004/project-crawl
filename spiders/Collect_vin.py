@@ -34,69 +34,64 @@ class VinSpider(scrapy.Spider):
     start_urls=['https://vpic.nhtsa.dot.gov/decoder']
     def parse(self,response):
         #root=os.getcwd()
-        Pathfile='input_VIN.txt'
-        cm_request=[]        
+        token = response.css('input[name="__RequestVerificationToken"]::attr(value)').extract_first()
+        Pathfile='input_VIN.txt'   
         with open(Pathfile,'r') as f:
             data=f.readlines()
         for a in data:
             self.ListVin.append(a)
-        Vin=self.ListVin[0];
-        token = response.css('input[name="__RequestVerificationToken"]::attr(value)').extract_first()
-        '''data={
-            '__RequestVerificationToken':token,
-            'VIN':Vin,
-            'ModelYear':''        
-        }'''
-        formdata={"value":Vin}
-        print(token)
-        request=scrapy.FormRequest.from_response(response,formdata=formdata,clickdata={"id":"btnSubmit", 'value' :'Decode VIN'},callback=self.parse_Vin)
-        #print(data['VIN'])     
-        '''if(len(self.ListVin)>0):
+        print(len(self.ListVin))
+        data={
+            "__RequestVerificationToken":"",
+            "VIN":"",
+            "ModelYear":""      
+        }
+        if(len(self.ListVin)>0):
             for Vin in self.ListVin:
                 token = response.css('input[name="__RequestVerificationToken"]::attr(value)').extract_first()
                 data={
                     '__RequestVerificationToken':token,
-                    'VIN':Vin,
+                    'VIN':Vin.strip(),
                     'ModelYear':''        
                 }
-                print(Vin)
-                print(token)
-                cm_request.append(data)
-        else:
-            raise CloseSpider('Không có số VIN')
-        for cm in cm_request:'''
-        #yield scrapy.FormRequest(url=self.url_vin,formdata=data,callback=self.parse_Vin)                   
-        yield request
+                yield scrapy.FormRequest(url=self.url_vin,formdata=data,callback=self.parse_Vin)              
     def parse_Vin(self,response):
         hsx=Selector(response)
         aa=response.body
-        
-        filename = 'result.txt'
+        '''filename = 'result.txt'
         with open(filename, 'w') as f:
-            f.write(response.text)
-        '''vehicle={}      
-        vehicle['Vin']=hsx.xpath("//input[@id='VIN']").attrib['value']
-        vehicle['Man']=hsx.xpath("//body/div[@id='outerDiv']/div[@id='divCommonDetails']/div[@id='searchform']/div[1]/div[2]/div[2]/div[1]/p[1]/a[1]/text()").get()
-        vehicle['VehType']=hsx.xpath("//body/div[@id='outerDiv']/div[@id='divCommonDetails']/div[@id='searchform']/div[1]/div[2]/div[2]/div[1]/p[3]/text()").get()
-        vehicle['Year']=hsx.xpath("//span[@id='decodedModelYear']/text()").get()
-        vehicle['Make']=hsx.xpath("//span[@id='decodedMake']/text()").get()
-        vehicle['Model']=hsx.xpath("//span[@id='decodedModel']/text()").get()
-        vehicle['Bodyclass']=hsx.xpath("//body/div[@id='outerDiv']/div[@id='divCommonDetails']/div[@id='searchform']/div[1]/div[2]/div[2]/div[1]/p[7]/text()").get()
-        vehicle['Series']=hsx.xpath('//label[contains(text(),"Series:")]/following-sibling::text()').get()
-        vehicle['Cylinder']=hsx.xpath("//label[contains(text(),'Cylinders:')]/following-sibling::text()").get()
-        vehicle['Trim']=hsx.xpath("//label[contains(text(),'Trim:')]/following-sibling::text()").get()
-        vehicle['EngineModel']=hsx.xpath("//label[contains(text(),'Engine Model:')]/following-sibling::text()").get()
-        vehicle['FuelType']=hsx.xpath("//label[contains(text(),' Primary Fuel Type:')]/following-sibling::text()").get()
-        vehicle['EngineDisplacement']=hsx.xpath("//label[contains(text(),' Engine Displacement (L):')]/following-sibling::text()").get()
-        print(vehicle['VehType'])
-        self.list_result.append(vehicle)             
-        filename = 'result.csv'        
-        with open(filename, 'w',newline="") as f:
-            writer=csv.DictWriter(f,['Vin','Man','VehType','Year','Make','Model','Bodyclass','Series','Cylinder','Trim','EngineModel','FuelType','EngineDisplacement'])
-            writer.writeheader()        
-            writer.writerow(vehicle)'''
-def run_Vin(VinSpider):      
-    process=CrawlerProcess()
-    process.crawl(VinSpider)
-    process.start()
-run_Vin(VinSpider)
+            f.write(response.text)'''
+        vehicle={'Vin':' ','Man':' ','VehType':' ','Year':' ','Make':' ','Model':' ','Bodyclass':' ','Series':' ','Cylinder':' ','Trim':' ','EngineModel':' ','FuelType':' ','EngineDisplacement':' '}      
+        vehicle['Vin']=hsx.xpath("//input[@id='VIN']").attrib['value'].strip()
+        vehicle['Man']=hsx.xpath("//body/div[@id='outerDiv']/div[@id='divCommonDetails']/div[@id='searchform']/div[1]/div[2]/div[2]/div[1]/p[1]/a[1]/text()").get().strip()
+        vehicle['VehType']=hsx.xpath("//body/div[@id='outerDiv']/div[@id='divCommonDetails']/div[@id='searchform']/div[1]/div[2]/div[2]/div[1]/p[3]/text()").get().strip()
+        vehicle['Year']=hsx.xpath("//span[@id='decodedModelYear']/text()").get().strip()
+        vehicle['Make']=hsx.xpath("//span[@id='decodedMake']/text()").get().strip()
+        vehicle['Model']=hsx.xpath("//span[@id='decodedModel']/text()").get().strip()
+        vehicle['Bodyclass']=hsx.xpath("//body/div[@id='outerDiv']/div[@id='divCommonDetails']/div[@id='searchform']/div[1]/div[2]/div[2]/div[1]/p[7]/text()").get().strip()  
+        Series=hsx.xpath('//label[contains(text(),"Series:")]/following-sibling::text()').get()
+        #vehicle['Series']=hsx.xpath('//label[contains(text(),"Series:")]/following-sibling::text()').get()
+        if((Series is None)==False):
+            vehicle['Series']=Series.strip()
+        vehicle['Cylinder']=hsx.xpath("//label[contains(text(),'Cylinders:')]/following-sibling::text()").get().strip()
+        Trim=hsx.xpath("//label[contains(text(),'Trim:')]/following-sibling::text()").get()
+        #vehicle['Trim']=hsx.xpath("//label[contains(text(),'Trim:')]/following-sibling::text()").get().strip()
+        if((Trim is None)==False):
+            vehicle['Trim']=Trim.strip()
+        vehicle['EngineModel']=hsx.xpath("//label[contains(text(),'Engine Model:')]/following-sibling::text()").get().strip()
+        vehicle['FuelType']=hsx.xpath("//label[contains(text(),' Primary Fuel Type:')]/following-sibling::text()").get().strip()
+        vehicle['EngineDisplacement']=hsx.xpath("//label[contains(text(),' Engine Displacement (L):')]/following-sibling::text()").get().strip()
+        self.list_result.append(vehicle)
+        print(len(self.list_result))
+        if(len(self.list_result) == len(self.ListVin)):
+            filename = 'result.csv'        
+            with open(filename, 'w',newline="") as f:
+                writer=csv.DictWriter(f,['Vin','Man','VehType','Year','Make','Model','Bodyclass','Series','Cylinder','Trim','EngineModel','FuelType','EngineDisplacement'])
+                writer.writeheader()
+                for dt in self.list_result:
+                    writer.writerow(dt)            
+    def run_Vin(VinSpider):      
+        process=CrawlerProcess()
+        process.crawl(VinSpider)
+        process.start()
+VinSpider.run_Vin(VinSpider)
