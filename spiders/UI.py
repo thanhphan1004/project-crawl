@@ -11,15 +11,21 @@ lbl=Label(window,text="Hello",font=("Arial Bold",50))
 lbl.grid(column=0,row=0)
 def clicked():
     feedback= askopenfilename()
-    pathOld=feedback.rfind("/")
-    path=feedback[0:(int(pathOld)+1)]
-    Oldname=feedback[(int(pathOld)+1):int(len(feedback))]    
-    os.listdir(path)
-    newName="input_VIN.txt"
-    os.rename=(path+Oldname,path+newName)
-    print(feedback)
-    print(newName)
-    #VinSpider.run_Vin(VinSpider)
+    data=[]
+    with open(feedback,"r") as f:
+        chuoi=f.read()
+    chuoi=chuoi.split('\n')
+    f.close()
+    filename=root+"\input_VIN.txt"
+    i=0
+    with open(filename,'w') as f:
+        for s in chuoi:
+            f.write(s)
+            i=i+1
+            if(i<len(chuoi)):
+                f.write('\n')
+    f.close()
+    VinSpider.run_Vin(VinSpider)
 btn=Button(window,text="NHTSA Decode",height=5,width=20,command=clicked)
 btn.place(x=200,y=300)
 

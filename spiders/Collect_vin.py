@@ -39,8 +39,7 @@ class VinSpider(scrapy.Spider):
         with open(Pathfile,'r') as f:
             data=f.readlines()
         for a in data:
-            self.ListVin.append(a)
-        print(len(self.ListVin))
+            self.ListVin.append(a)        
         data={
             "__RequestVerificationToken":"",
             "VIN":"",
