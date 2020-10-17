@@ -4,9 +4,12 @@ from scrapy.selector import Selector
 from scrapy.exceptions import CloseSpider
 import csv
 import os
-from multiprocessing.context import Process
+from multiprocessing import Process, Queue
 from scrapy.exceptions import CloseSpider
 from twisted.internet import protocol, reactor, endpoints
+from scrapy.utils.log import configure_logging
+import time
+from scrapy.utils.project import get_project_settings
 class VinSpider(scrapy.Spider):
     name='input_vin'
     list_result=[]
@@ -85,8 +88,25 @@ class VinSpider(scrapy.Spider):
                 writer.writeheader()
                 for dt in self.list_result:
                     writer.writerow(dt)            
-    def run_Vin(VinSpider):      
+    '''def run_Vin(VinSpider):      
         process=CrawlerProcess()
         process.crawl(VinSpider)
-        process.start()
-VinSpider.run_Vin(VinSpider)
+        process.start()'''
+    def run_Vin():
+        runner=CrawlerRunner()
+        d=runner.crawl(VinSpider)
+        d.addBoth(lambda _:reactor.stop())
+        reactor.run()
+def sleep(_,duration=5):
+    print(f'Sleeping for: {duration}')
+    time.sleep(duration)
+def crawl(runner):
+    d=runner.crawl(VinSpider)
+    d.addBoth(sleep)
+    d.addBoth(lambda _:reactor.stop())
+    return d
+def loop_crawl():
+    runner=CrawlerRunner(get_project_settings())
+    d=crawl(runner)
+    d.addBoth(lambda _: crawl(runner))
+    reactor.run()

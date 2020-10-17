@@ -29,9 +29,9 @@ def clicked():
             i=i+1
             if(i<len(chuoi)):
                 f.write('\n')
-    f.close()    
-    VinSpider.run_Vin(VinSpider)
-    time.sleep(1)
+    f.close() 
+    loop_crawl()   
+    #time.sleep(1)
     lbl_result.configure(text="crawl success")
     lbl_note.configure(text="Vui lòng khởi động lại Soft")
 btn=Button(window,text="NHTSA Decode",height=5,width=20,command=clicked)
